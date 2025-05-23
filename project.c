@@ -27,25 +27,25 @@ void clearScreen();
 typedef struct User {
     char username[50];
     char password[50];
-    struct User* next;//(hash adjacency list)if both user have same index they are chained as a linked list in the same bucket
+    struct User* next;
 } User;
 
 typedef struct Friend {
     char username[50];
-    struct Friend* next;//next friend in the friend list
+    struct Friend* next;
 } Friend;
 
 typedef struct Message {
     char sender[50];
     char message[256];
-    struct Message* next;//next msg in the inbox
+    struct Message* next;
 } Message;
 
 typedef struct UserNode {
     char username[50];
     Friend* friends;
     Message* messages;
-    struct UserNode* next;//chaained graph's adjacency list//or for dfs/bfs
+    struct UserNode* next;
 } UserNode;
 
 User* hashTable[HASH_SIZE];
@@ -103,144 +103,46 @@ int loginUser(char* username, char* password) {
     return 0;
 }
 
-// int addFriend(char* user, char* friend) {
-//     for (int i = 0; i < userCount; i++) {
-//         if (strcmp(userGraph[i]->username, user) == 0) {
-//             Friend* newFriend = (Friend*)malloc(sizeof(Friend));
-//             strcpy(newFriend->username, friend);
-//             newFriend->next = userGraph[i]->friends;
-//             userGraph[i]->friends = newFriend;
-//             printf("%s added as a friend.",friend);
-//             clearScreen();
-//             return 1;
-//         }
-//     }
-//     return 0;
-// }
-
 int addFriend(char* user, char* friend) {
-    UserNode* userNode = NULL;
-    UserNode* friendNode = NULL;
-
-    // Find both the user and friend in the graph
     for (int i = 0; i < userCount; i++) {
         if (strcmp(userGraph[i]->username, user) == 0) {
-            userNode = userGraph[i];
-        }
-        if (strcmp(userGraph[i]->username, friend) == 0) {
-            friendNode = userGraph[i];
+            Friend* newFriend = (Friend*)malloc(sizeof(Friend));
+            strcpy(newFriend->username, friend);
+            newFriend->next = userGraph[i]->friends;
+            userGraph[i]->friends = newFriend;
+            printf("%s added as a friend.",friend);
+            clearScreen();
+            return 1;
         }
     }
-
-    // If either user or friend is not found, return failure
-    if (!userNode || !friendNode) {
-        printf("Error: One or both users not found.\n");
-        return 0;
-    }
-
-    // Check if friendship already exists
-    Friend* temp = userNode->friends;
-    while (temp) {
-        if (strcmp(temp->username, friend) == 0) {
-            printf("Friendship already exists!\n");
-            return 0;
-        }
-        temp = temp->next;
-    }
-
-    // Add friend to user's list
-    Friend* newFriend1 = (Friend*)malloc(sizeof(Friend));
-    strcpy(newFriend1->username, friend);
-    newFriend1->next = userNode->friends;
-    userNode->friends = newFriend1;
-
-    // Add user to friend's list (making friendship bidirectional)
-    Friend* newFriend2 = (Friend*)malloc(sizeof(Friend));
-    strcpy(newFriend2->username, user);
-    newFriend2->next = friendNode->friends;
-    friendNode->friends = newFriend2;
-
-    printf("%s and %s are now friends!\n", user, friend);
-    clearScreen();
-    return 1;
+    return 0;
 }
 
 
-// int removeFriend(char* user, char* friend) {
-//     for (int i = 0; i < userCount; i++) {
-//         if (strcmp(userGraph[i]->username, user) == 0) {
-//             Friend* current = userGraph[i]->friends;
-//             Friend* previous = NULL;
-//             while (current) {
-//                 if (strcmp(current->username, friend) == 0) {
-//                     if (previous) {
-//                         previous->next = current->next;
-//                     } else {
-//                         userGraph[i]->friends = current->next;
-//                     }
-//                     free(current);
-//                     clearScreen();
-//                     return 1;
-//                 }
-//                 previous = current;
-//                 current = current->next;
-//             }
-//         }
-//     }
-//     return 0;
-// }
-
-// Function to remove a friend from a user's friend list
-void removeFromFriendList(UserNode* user, char* friendName){
-    Friend* current = user->friends;
-    Friend* previous = NULL;
-    while (current) {
-        if (strcmp(current->username, friendName) == 0) {
-            if (previous) {
-                previous->next = current->next;
-            } else {
-                user->friends = current->next;
-            }
-            free(current);
-            return;
-        }
-        previous = current;
-        current = current->next;
-    }
-}
 
 int removeFriend(char* user, char* friend) {
-    UserNode* userNode = NULL;
-    UserNode* friendNode = NULL;
-
-    // Find both user and friend in userGraph
     for (int i = 0; i < userCount; i++) {
         if (strcmp(userGraph[i]->username, user) == 0) {
-            userNode = userGraph[i];
-        }
-        if (strcmp(userGraph[i]->username, friend) == 0) {
-            friendNode = userGraph[i];
+            Friend* current = userGraph[i]->friends;
+            Friend* previous = NULL;
+            while (current) {
+                if (strcmp(current->username, friend) == 0) {
+                    if (previous) {
+                        previous->next = current->next;
+                    } else {
+                        userGraph[i]->friends = current->next;
+                    }
+                    free(current);
+                    clearScreen();
+                    return 1;
+                }
+                previous = current;
+                current = current->next;
+            }
         }
     }
-
-    // If either user or friend is not found, return failure
-    if (!userNode || !friendNode) {
-        printf("Error: One or both users not found.\n");
-        return 0;
-    }
-
-
-    // Remove `friend` from `user`'s friend list
-    removeFromFriendList(userNode, friend);
-
-    // Remove `user` from `friend`'s friend list (ensuring bidirectional removal)
-    removeFromFriendList(friendNode, user);
-
-    printf("%s and %s are no longer friends.\n", user, friend);
-    clearScreen();
-    return 1;
+    return 0;
 }
-
 
 
 void sendMessage(char* sender, char* receiver, char* message) {

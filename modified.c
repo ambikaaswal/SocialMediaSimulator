@@ -14,25 +14,25 @@
 typedef struct User {
     char username[50];
     char password[50];
-    struct User* next;//(hash adjacency list)if both user have same index they are chained as a linked list in the same bucket
+    struct User* next;
 } User;
 
 typedef struct Friend {
     char username[50];
-    struct Friend* next;//next friend in the friend list
+    struct Friend* next;
 } Friend;
 
 typedef struct Message {
     char sender[50];
     char message[256];
-    struct Message* next;//next msg in the inbox
+    struct Message* next;
 } Message;
 
 typedef struct UserNode {
     char username[50];
     Friend* friends;
     Message* messages;
-    struct UserNode* next;//chaained graph's adjacency list//or for dfs/bfs
+    struct UserNode* next;
 } UserNode;
 
 User* hashTable[HASH_SIZE];
@@ -84,7 +84,6 @@ int registerUser(char* username, char* password) {
         current = current->next;
     }
 
-
     User* newUser = (User*)malloc(sizeof(User));
     strcpy(newUser->username, username);
     strcpy(newUser->password, password);
@@ -95,16 +94,13 @@ int registerUser(char* username, char* password) {
     strcpy(newNode->username, username);
     newNode->friends = NULL;
     newNode->messages = NULL;
-    newNode->next = userGraph[userCount];//this is always null, because there is no chaining at the same index.
-    //will use later for bfs/dfs. 
-    //currently equivalent to newNode-> next = NULL;
+    newNode->next = userGraph[userCount];
     userGraph[userCount++] = newNode;
 
     printf("User registered successfully!\n");
     clearScreen();
     return 1;
 }
-
 
 int loginUser(char* username, char* password) {
     unsigned int index = hash(username);
@@ -227,8 +223,6 @@ int removeFriend(char* user, char* friend) {
     clearScreen();
     return 1;
 }
-
-
 
 void sendMessage(char* sender, char* receiver, char* message) {
     for (int i = 0; i < userCount; i++) {
