@@ -1,30 +1,3 @@
-//problems so far:
-// my friend appears on my friend list but, i am not on his/hers.(ek friend list ka function chahiye request accept k liye)(future scope)
-//display messages shouldn't quit on it's own. (done)
-//Add friend k baad k pop up message chahiye, friend added wala. (done)
-// Add friend me check hona chahiye if friend exists.(done)
-//same record se new registeration me bhi same, registered succesfully dikha raha h, but data vahi h.(done) 
-// isme registeration k liye copy generate na ho ye dekhna h(done)
-// message same name k users ko broadcast ho rahe h.(done)
-//apne aap ko message kr pa rahe h.
-//same user password store ho rahe h baar baar.login me already exist dekhna h.(done)
-//user k naam me agar space h, toh password enter nahi ho raha
-//jo log h abhi nahi, vo bhi friends bn jaa rahe h.(done)
-//adjacency list is for usernode(social graph)
-//addfriend() should have bidirectional edge so that if i add someone as friend i am on their friend list as well(done)
-// removeFriend() should be bidrectional as well(done)
-//addfriend() should be updated to check if a user exists.(done)
-//show history of sent messages.
-// remove friend k baad message. (done)
-// initialising  the hash table and graph to null, to avoid garbage values at the end of the linked list.(done)
-
-// future roles:
-// debugging
-// BSF/dfs
-// sound
-// password encryption
-// file handling
-// reuse graph indexes
 
 #include <stdio.h>
 #include <stdlib.h>
