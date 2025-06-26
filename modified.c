@@ -1,12 +1,61 @@
-
+// Problems:
+// same user register honge toh message broadcast hoga
+// aur same user register na krne de toh hash chaining ka koi mtlb nahi 
+// kyunki username se hash value determine ho rahi h.(so need a unique value for hashing(maybe email/mobile))
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #ifdef _WIN32
     #include <windows.h>
+    #include<conio.h>
 #else
     #include <unistd.h>
+    #include<termios.h>
 #endif
+
+
+#ifdef _WIN32
+    void getPassword(char* password, int maxLen) {
+        int i = 0;
+        char ch;
+        while ((ch = _getch()) != '\r' && i < maxLen - 1) {
+            if ((ch == '\b' || ch == 127) && i > 0) {
+                i--;
+                printf("\b \b");
+            } else if (ch != '\b' && ch != 127) {
+                password[i++] = ch;
+                printf("*");
+            }
+        }
+        password[i] = '\0';
+        printf("\n");
+    }
+#else
+    void getPassword(char* password, int maxLen) {
+        struct termios old_props, new_props;
+        tcgetattr(STDIN_FILENO, &old_props);
+        new_props = old_props;
+        new_props.c_lflag &= ~(ECHO | ICANON);
+        tcsetattr(STDIN_FILENO, TCSANOW, &new_props);
+
+        int i = 0;
+        char ch;
+        while ((ch = getchar()) != '\n' && ch != EOF && i < maxLen - 1) {
+            if ((ch == '\b' || ch == 127) && i > 0) {
+                i--;
+                printf("\b \b");
+            } else if (ch != '\b' && ch != 127) {
+                password[i++] = ch;
+                printf("*");
+            }
+            fflush(stdout);
+        }
+        password[i] = '\0';
+        tcsetattr(STDIN_FILENO, TCSANOW, &old_props);
+        printf("\n");
+    }
+#endif
+
 
 #define MAX_USERS 100
 #define HASH_SIZE 101
@@ -51,8 +100,6 @@ void displayMessages(char* username);
 void xorCipher(char* message, char* key);
 void clearScreen();
 
-
-
 unsigned int hash(char* str) {
     unsigned int hash = 0;
     while (*str) {
@@ -63,31 +110,32 @@ unsigned int hash(char* str) {
 
 void clearScreen() {
     #ifdef _WIN32
-        Sleep(3000);
+        Sleep(2000);
         system("cls");
     #else
-        sleep(3);
+        sleep(2);
         system("clear");
     #endif
 }
 
+// void hashPassword(char* input, char* output) {
+//     char key[] = "ZingleKey";
+//     int len = strlen(input);
+//     for (int i = 0; i < len; i++) {
+//         output[i] = input[i] ^ key[i % strlen(key)];
+//     }
+//     output[len] = '\0';
+// }
+
 int registerUser(char* username, char* password) {
     unsigned int index = hash(username);
-
-    User* current = hashTable[index];
-    while (current) {
-        if (strcmp(current->username, username) == 0) {
-            printf("Error: Username '%s' already exists. Please choose another.\n", username);
-            clearScreen();
-            return 0;
-        }
-        current = current->next;
-    }
-
     User* newUser = (User*)malloc(sizeof(User));
     strcpy(newUser->username, username);
+    // char hashedPass[50];
+    // hashPassword(password, hashedPass);
+    // strcpy(newUser->password, hashedPass);
     strcpy(newUser->password, password);
-    newUser->next = hashTable[index]; 
+    newUser->next = hashTable[index];
     hashTable[index] = newUser;
 
     UserNode* newNode = (UserNode*)malloc(sizeof(UserNode));
@@ -96,7 +144,6 @@ int registerUser(char* username, char* password) {
     newNode->messages = NULL;
     newNode->next = userGraph[userCount];
     userGraph[userCount++] = newNode;
-
     printf("User registered successfully!\n");
     clearScreen();
     return 1;
@@ -105,6 +152,8 @@ int registerUser(char* username, char* password) {
 int loginUser(char* username, char* password) {
     unsigned int index = hash(username);
     User* currentUser = hashTable[index];
+    // char hashedInput[50];
+    // hashPassword(password, hashedInput);
     while (currentUser) {
         if (strcmp(currentUser->username, username) == 0 &&
             strcmp(currentUser->password, password) == 0) {
@@ -215,7 +264,6 @@ int removeFriend(char* user, char* friend) {
         return 0;
     }
 
-
     removeFromFriendList(userNode, friend);
     removeFromFriendList(friendNode, user);
 
@@ -259,7 +307,16 @@ void displayFriends(char* username) {
                 printf("%s\n", currentFriend->username);
                 currentFriend = currentFriend->next;
             }
-            clearScreen();
+            int ch=0;
+            do{
+            printf("Enter 1 to return to home.\n");
+            scanf("%d",&ch);
+            }while(ch!=1);
+            #ifdef _WIN32
+                system("cls");
+            #else
+                system("clear");
+            #endif
             return;
         }
     }
@@ -303,6 +360,7 @@ void xorCipher(char* message, char* key) {
     }
 }
 
+
 void loadingBar() {
     printf("Loading...");
     for (int i = 0; i < 10; i++) {
@@ -345,9 +403,9 @@ int main() {
         switch (choice) {
             case 1:
                 printf("Enter username: ");
-                scanf("%s", username);
+                scanf(" %[^\n]%*c", username);
                 printf("Enter password: ");
-                scanf("%s", password);
+                getPassword(password, 50);
                 if (loginUser(username, password)) {
                     printf("Login successful!\n");
                     int userChoice;
@@ -361,12 +419,12 @@ int main() {
                         switch (userChoice) {
                             case 1:
                                 printf("Enter friend's username: ");
-                                scanf("%s", friend);
+                                scanf(" %[^\n]%*c", friend);
                                 addFriend(username, friend);
                                 break;
                             case 2:
                                 printf("Enter friend's username to remove: ");
-                                scanf("%s", friend);
+                                scanf(" %[^\n]%*c", friend);
                                 if (removeFriend(username, friend)) {
                                     printf("Friend removed successfully!\n");
                                 } else {
@@ -375,7 +433,7 @@ int main() {
                                 break;
                             case 3:
                                 printf("Enter receiver's username: ");
-                                scanf("%s", friend);
+                                scanf(" %[^\n]%*c", friend);
                                 printf("Enter message: ");
                                 scanf(" %[^\n]%*c", message);
                                 xorCipher(message, username);
@@ -399,9 +457,9 @@ int main() {
                 break;
             case 2:
                 printf("Enter username: ");
-                scanf("%s", username);
+                scanf(" %[^\n]%*c", username);
                 printf("Enter password: ");
-                scanf("%s", password);
+                getPassword(password, 50);
                 registerUser(username, password);
                 break;
             case 3:
