@@ -128,6 +128,11 @@ void clearScreen() {
 // }
 
 int registerUser(char* username, char* password) {
+    if (userCount == MAX_USERS) {
+    printf("Error: Maximum number of users reached (%d).\n", MAX_USERS);
+    clearScreen();
+    return 0;
+    }
     unsigned int index = hash(username);
     User* newUser = (User*)malloc(sizeof(User));
     strcpy(newUser->username, username);
@@ -164,7 +169,6 @@ int loginUser(char* username, char* password) {
     }
     return 0;
 }
-
 
 int addFriend(char* user, char* friend) {
     UserNode* userNode = NULL;
